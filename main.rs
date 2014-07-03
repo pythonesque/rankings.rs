@@ -93,13 +93,13 @@ impl TeamDatabase {
     }
     let mut franchiseTeams = SmallIntMap::new();
     for (idx, &franchise) in franchises.iter() {
-      match franchises.iter().max_by({ |&(idx2, team)|
-        if idx == idx2 {
-          match teams.find(team) {
-            Some(team) => team.year,
-            None => i32::MIN
-          }
-        } else { i32::MIN }
+      match franchises.iter().filter({|&(idx2, _)|
+        idx == idx2
+      }).max_by({ |&(_, team)|
+        match teams.find(team) {
+          Some(team) => team.year,
+          None => i32::MIN
+        }
       }) {
         Some((latest_team, _)) => franchiseTeams.insert(franchise, latest_team),
         None => false
@@ -120,8 +120,7 @@ fn main() {
   let oldTeam = Team {name: "Hornets", year: 2010};
   let oldTeamId = db.teamIds.find(&oldTeam);
   let oldTeamLoc = oldTeamId.and_then({ |id| db.locations.find(id)}).map_or("<not found>", { |&loc| loc});
-  let franchise = oldTeamId.and_then({ |id| db.franchises.find(id)});
-  let newTeamId = franchise.and_then({ |id| db.franchiseTeams.find(id)});
+  let newTeamId = oldTeamId.and_then({ |id| db.franchises.find(id)}).and_then({ |id| db.franchiseTeams.find(id)});
   let newTeam = newTeamId.and_then({ |id| db.teams.find(id) });
   let newTeamLoc = newTeamId.and_then({ |id| db.locations.find(id)}).map_or("<not found>", {|&loc| loc});
   println!(
