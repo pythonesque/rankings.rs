@@ -96,10 +96,7 @@ impl TeamDatabase {
       match franchises.iter().filter({|&(idx2, _)|
         idx == idx2
       }).max_by({ |&(_, team)|
-        match teams.find(team) {
-          Some(team) => team.year,
-          None => i32::MIN
-        }
+        teams.get(team).year
       }) {
         Some((latest_team, _)) => franchiseTeams.insert(franchise, latest_team),
         None => false
